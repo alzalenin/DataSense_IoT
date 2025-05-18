@@ -1,68 +1,182 @@
-/* Título más pequeño y color verde */
-h1 {
-  color: green; /* Título en verde */
-  font-size: 26px; /* Reducir tamaño del título */
-  text-align: center; /* Centrar el título */
+:root {
+  --color-light: #9dcbcf;      /* Celeste claro */
+  --color-medium: #5194a2;     /* Azul medio */
+  --color-medium-2: #87bec1;   /* Azul medio 2 */
+  --color-dark: #27536a;       /* Azul oscuro */
+  --color-alert: #b1596c;      /* Rojo complementario */
+  --color-alert-off: #77354d;  /* Rojo apagado */
+  --color-connect: #3cc222;
+  --text-light: #ffffff;
+  --text-dark: #000000;
+
 }
 
-h2 {
-  color: green; /* Título en verde */
- /* font-size: 16 px; /* Reducir tamaño del título */
-  text-align: center; /* Centrar el título */
-}
-/* Botones más grandes */
-button {
-  font-size: 18px; /* Aumentar el tamaño de la fuente */
-  padding: 15px 30px; /* Aumentar el área del botón */
-  margin: 10px 0; /* Añadir espacio entre los botones */
-  cursor: pointer; /* Cambiar el cursor al pasar por encima */
-  background-color: #4CAF50; /* Fondo verde */
-  color: white; /* Texto blanco */
-  border: none; /* Sin bordes */
-  border-radius: 5px; /* Bordes redondeados */
+/* Reset mínimo */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-button:hover {
-  background-color: #45a049; /* Efecto hover para cambiar el color del botón */
-}
-
-/* Enlace como un link clicable */
-#website a {
-  color: blue; /* Color azul para el enlace */
-  text-decoration: none; /* Eliminar subrayado */
-}
-
-#website a:hover {
-  text-decoration: underline; /* Subrayado cuando el cursor pasa por encima */
-}
-
-/* Estilo para el mensaje de IP reducido */
-.small-text {
-  font-size: 12px; /* Reducir el tamaño del texto */
-  color: #555; /* Color gris */
-  text-align: center; /* Centrar el texto */
-  margin-top: 20px; /* Espacio superior */
-}
-
-/* Estilo para el contenedor principal */
-.container {
+body {
+  font-family: Arial, sans-serif;
+  background: var(--color-dark);
+  color: var(--text-dark);
   padding: 20px;
-  text-align: center; /* Centrar el contenido */
 }
 
-/* Estilo para los LEDs */
-.led {
-  width: 30px;
-  height: 30px;
+/* Contenedor principal del dashboard */
+.dashboard {
+  background: var(--color-light);
+  border-radius: 8px;
+  overflow: hidden;
+  max-width: 1200px;
+  margin: auto;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+/* Encabezado */
+.dashboard-header {
+  background: var(--color-medium);
+  color: var(--text-light);
+  padding: 12px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.dashboard-header .title {
+  font-size: 20px;
+  font-weight: bold;
+}
+.dashboard-header .status {
+  font-size: 14px;
+  color: var(--color-connect);
+  margin-top: 4px;
+  font-weight: bold;
+}
+.dashboard-header .close {
+  cursor: pointer;
+  color: var(--color-alert);
+  font-size: 20px;
+  font-weight: bold;
+}
+
+/* Área principal */
+.dashboard-main {
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+}
+
+/* Cada bloque (sensores+config, gráficos) */
+.block {
+  border-radius: 8px;
+  background: var(--color-medium-2);
+  padding: 15px;
+  flex: 1;
+  color: var(--text-dark);
+  position: relative;
+}
+.block h4 {
+  border-bottom: 2px solid var(--color-medium);
+  padding-bottom: 6px;
+  margin-bottom: 12px;
+}
+
+/* Filas de sensor / label + valor */
+.block .led {
+  display: flex;
+  justify-content: space-between;
+  margin: 8px 0;
+}
+.block .led span {
+  color: var(--text-dark);
+}
+.block input {
+  padding: 6px;
+  border: 1px solid var(--color-light);
+  border-radius: 4px;
+  color: var(--text-dark);
+  background: var(--text-light);
+}
+
+/* Botones */
+.btn {
+  display: inline-block;
+  background: var(--color-dark);
+  color: var(--text-light);
+  border: none;
+  border-radius: 5px;
+  padding: 8px 16px;
+  cursor: pointer;
+  margin-top: 12px;
+  transition: background 0.2s ease;
+}
+.btn:hover {
+  background: var(--color-medium);
+  color: var(--text-dark);
+}
+.btn-alert {
+  background: var(--color-alert);
+}
+.btn-alert:hover {
+  background: var(--color-alert-off);
+}
+
+/* Sección de alarma */
+.alarm {
+  margin-top: 20px;
+}
+.alarm-row {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 12px;
+}
+.alarm-box {
+  text-align: center;
+}
+.alarm-box span {
+  display: block;
+  margin-bottom: 6px;
+}
+.led-large {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--color-alert-off);
   border-radius: 50%;
-  margin: 10px auto;
-  background-color: grey; /* LED apagado por defecto */
+  background: var(--color-light);
+  transition: background 0.2s ease;
+}
+.led-large.on {
+  background: var(--color-alert);
 }
 
-#led1 {
-  background-color: grey; /* LED 1 apagado por defecto */
+/* Créditos en footer de bloque */
+.credits {
+  font-size: 12px;
+  text-align: center;
+  margin-top: 20px;
+  border-top: 1px solid var(--color-medium);
+  padding-top: 8px;
+  color: var(--text-dark);
+}
+.credits em {
+  display: block;
+  margin-bottom: 4px;
 }
 
-#led2 {
-  background-color: grey; /* LED 2 apagado por defecto */
+
+
+/* Dentro de tu .block */
+.block canvas {
+  /*background: var(--color-medium-2);  /* azul medio 2 */
+  background-color: rgba(255, 255, 255); 
+  border-radius: 6px;
+  display: block;
+}
+
+/* Dentro de .chart-block o donde tengas tu canvas */
+.chart-block canvas {
+  width : 100% !important;
+  height: 200px !important;   /* altura fija */
 }

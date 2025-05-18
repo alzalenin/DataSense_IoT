@@ -1,37 +1,102 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Control Device</title>
-  <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DataSense IOT — Login</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div class="container">
-    <h1>Welcome/Willkommem</h1>
-    <h1>Bienvenido</h1>
-    <h2 id="deviceName">Device: </h2>
 
-    <div id="statusContainer">
-      <p>Device Status: <span id="status1">Disconnected</span></p>
-      <div id="led1" class="led"></div> <!-- LED virtual para el control 1 -->
-      <button id="onButton1">1 Open / Abrir / Offen</button> <!-- Botón para controlar LED1 -->
-      
-      <p>Device Status: <span id="status2">Disconnected</span></p>
-      <div id="led2" class="led"></div> <!-- LED virtual para el control 2 -->
-      <button id="onButton2">2 Open / Abrir / Offen</button> <!-- Botón para controlar LED2 -->
+  <!-- PANTALLA DE LOGIN -->
+  <div id="login-container" class="login-container">
+    <h2>DataSense IOT</h2>
+    <p>Ingrese sus credenciales</p>
+    <input id="login-deviceId" type="text" placeholder="Device ID" />
+    <input id="login-password" type="password" placeholder="Password" />
+    <button id="login-button" class="btn">Entrar</button>
+    <p id="login-error" class="error"></p>
+  </div>
+
+  <!-- DASHBOARD (oculto hasta login OK) -->
+  <div id="dashboard" class="dashboard" style="display:none;">
+    <!-- ENCABEZADO -->
+    <div class="dashboard-header">
+      <div>
+        <div class="title" id="deviceName">DataSense IOT</div>
+        <div class="status">
+          <span id="status1">Connected</span>
+        </div>
+      </div>
+      <div class="close" id="closeBtn">×</div>
     </div>
 
-<!-- Enlace como link clicable -->
-<p id="website"><a href="https://www.electrosolucion.com" target="_blank">www.electrosolucion.com</a></p>
-    
-<!-- Mensaje de IP con estilo reducido -->
-<p id="ip" class="small-text">Your IP address may be stored for security purposes</p>
-</div>
+    <!-- CUERPO PRINCIPAL -->
+    <div class="dashboard-main">
+      <!-- BLOQUE 1: Sensores, Configuración y Alarma -->
+      <div class="block">
+        <h4>Sensores del Motor</h4>
+        <div class="led">
+          <span>Temperatura del Motor:</span>
+          <span id="motorTemp">-- °C</span>
+        </div>
+        <div class="led">
+          <span>Vibración de la Máquina:</span>
+          <span id="motorVibration">-- mm/s</span>
+        </div>
 
+        <h4>Configuración Crítica</h4>
+        <div class="led">
+          <span>Temp crítica:</span>
+          <input id="tempThreshold" type="number" placeholder="Ej. 75">
+        </div>
+        <div class="led">
+          <span>Máx actual:</span>
+          <span id="tempCurrent">-- °C</span>
+        </div>
+        <div class="led">
+          <span>Vib crítica:</span>
+          <input id="vibThreshold" type="number" placeholder="Ej. 10">
+        </div>
+        <div class="led">
+          <span>Máx actual:</span>
+          <span id="vibCurrent">-- mm/s</span>
+        </div>
+        <button class="btn" id="saveThresholdsBtn">Guardar Niveles Críticos</button>
+
+        <h4 class="alarm">Alarma</h4>
+        <div class="alarm-row">
+          <div class="alarm-box">
+            <span>Temperatura Alta</span>
+            <div id="tempAlarmLed" class="led-large"></div>
+          </div>
+          <div class="alarm-box">
+            <span>Vibración Alta</span>
+            <div id="vibAlarmLed" class="led-large"></div>
+          </div>
+        </div>
+        <button class="btn btn-alert" id="deactivateAlarmBtn">Desactivar Alarma</button>
+
+        <div class="credits">
+          <em>Desarrollado por:</em><br>
+          Verohuska Brigith Tito Flores<br>
+          Gianella Michell Rebatta Cazeneuve
+        </div>
+      </div>
+
+      <!-- BLOQUE 2: Gráficos -->
+      <div class="block">
+        <h4>Gráfico: Temperatura del Motor</h4>
+        <canvas id="chartTempMotor" style="width:100%; height:120px;"></canvas>
+        <h4 style="margin-top:20px;">Gráfico: Vibración de la Máquina</h4>
+        <canvas id="chartVibMotor" style="width:100%; height:120px;"></canvas>
+      </div>
+    </div>
   </div>
 
   <script src="/socket.io/socket.io.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="scripts.js"></script>
 </body>
 </html>
+

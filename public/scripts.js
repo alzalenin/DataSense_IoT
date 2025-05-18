@@ -1,96 +1,193 @@
-document.addEventListener('DOMContentLoaded', function() {
-  const statusElement1 = document.getElementById('status1');
-  const ledElement1 = document.getElementById('led1');
-  const onButton1 = document.getElementById('onButton1');
-  
-  const statusElement2 = document.getElementById('status2');
-  const ledElement2 = document.getElementById('led2');
-  const onButton2 = document.getElementById('onButton2');
-  
-  const deviceNameElement = document.getElementById('deviceName');
-  
-  // Obtener el ID del dispositivo desde el enlace
-  const urlParams = new URLSearchParams(window.location.search);
-  const deviceId = urlParams.get('device');  // Ejemplo: ?device=ESP32_1
-  
-  // Actualizamos el nombre del dispositivo en la interfaz
-  //deviceNameElement.innerText = `Device: ${deviceId}`;
-  deviceNameElement.innerText = `Device: Unidentified`;
-  
-  // Conectar al servidor WebSocket
-  const socket = io.connect();
-  
-  // Suscripción a los tópicos 'status1' y 'status2' dinámicamente según el deviceId
-  socket.emit('subscribe', deviceId);
+document.addEventListener('DOMContentLoaded', () => {
+  // — login —
+  const loginDiv  = document.getElementById('login-container');
+  const dashDiv   = document.getElementById('dashboard');
+  const devInput  = document.getElementById('login-deviceId');
+  const pwdInput  = document.getElementById('login-password');
+  const loginBtn  = document.getElementById('login-button');
+  const errorEl   = document.getElementById('login-error');
 
-  // Recibir actualizaciones de estado desde el servidor WebSocket
-  socket.on('deviceStatusUpdate', (data) => {
-    if (data.device === deviceId) {
-      if (data.control === 'status1') {
-        // Actualizamos el estado y el LED según el valor recibido en 'status1'
-        if (data.state === 'ON') {
-          statusElement1.innerText = 'Open';
-          ledElement1.style.backgroundColor = 'green';  // LED verde
-        } else if (data.state === 'OFF') {
-          statusElement1.innerText = 'Waiting';
-          ledElement1.style.backgroundColor = 'grey';  // LED apagado
-        }
-      } else if (data.control === 'status2') {
-        // Actualizamos el estado y el LED según el valor recibido en 'status2'
-        if (data.state === 'ON') {
-          statusElement2.innerText = 'Open';
-          ledElement2.style.backgroundColor = 'green';  // LED verde
-        } else if (data.state === 'OFF') {
-          statusElement2.innerText = 'Waiting';
-          ledElement2.style.backgroundColor = 'grey';  // LED apagado
-        }
-      }else if (data.control === 'name') {
-        // Actualizamos el estado y el LED según el valor recibido en 'status2'
-        deviceNameElement.innerText = `Device: ${data.state}`;
+  // — dashboard —
+  const deviceNameEl = document.getElementById('deviceName');
+  const motorTempEl  = document.getElementById('motorTemp');
+  const motorVibEl   = document.getElementById('motorVibration');
+  const tempCritIn   = document.getElementById('tempThreshold');
+  const tempCritCur  = document.getElementById('tempCurrent');
+  const vibCritIn    = document.getElementById('vibThreshold');
+  const vibCritCur   = document.getElementById('vibCurrent');
+  const tempAlarmLed = document.getElementById('tempAlarmLed');
+  const vibAlarmLed  = document.getElementById('vibAlarmLed');
+  const saveCritBtn  = document.getElementById('saveThresholdsBtn');
+  const disableAlarmB= document.getElementById('deactivateAlarmBtn');
+  const closeBtn     = document.getElementById('closeBtn');
+
+  const socket = io.connect();
+  let deviceId     = null;
+  let loginPending = false;
+  let loggedIn     = false;
+  let loginTimeout = null;
+
+  function showLoginError(msg) {
+    errorEl.innerText = msg;
+    loginBtn.disabled = false;
+  }
+
+  // — Entrar —
+  loginBtn.addEventListener('click', () => {
+    const dev = devInput.value.trim();
+    const pwd = pwdInput.value;
+    if (!dev || !pwd) return showLoginError('Debe ingresar DeviceID y contraseña');
+
+    deviceId = dev;
+    deviceNameEl.innerText = deviceId;
+    loginBtn.disabled      = true;
+    errorEl.innerText       = '';
+
+    // 1) WS subscribe
+    socket.emit('subscribe', deviceId);
+    // 2) WS publish password
+    socket.emit('publish', {
+      topic: `${deviceId}/password`,
+      message: pwd
+    });
+    // 3) espero respuesta mensaje
+    loginPending = true;
+    loginTimeout = setTimeout(() => {
+      if (loginPending) {
+        socket.emit('unsubscribe', deviceId);
+        loginPending = false;
+        showLoginError('Tiempo agotado de login');
+      }
+    }, 5000);
+  });
+
+
+/////////////////////////
+  // ————— Inicializar gráficas —————
+
+  const ctxTemp = document.getElementById('chartTempMotor').getContext('2d');
+  const tempChart = new Chart(ctxTemp, {
+    type: 'line',
+    data: {
+      labels: [],
+      datasets: [{
+        label: 'Temperatura Motor (°C)',
+        data: [],
+        fill: false,
+        borderWidth: 2,
+        tension: 0.2,
+        pointRadius: 0,        // radio de los puntos = 0
+        pointHoverRadius: 0   // igual al pasar el ratón
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        x: { display: true },
+        y: { beginAtZero: true }
+      }
+    }
+  });
+
+// ————— Vibración (dual–axis) —————
+const ctxVib = document.getElementById('chartVibMotor').getContext('2d');
+  const vibChart = new Chart(ctxVib, {
+    type: 'line',
+    data: {
+      labels: [],
+      datasets: [{
+        label: 'Vibración Maquina (mm/s)',
+        data: [],
+        fill: false,
+        borderWidth: 2,
+        tension: 0.2,
+        pointRadius: 0,        // radio de los puntos = 0
+        pointHoverRadius: 0   // igual al pasar el ratón
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        x: { display: true },
+        y: { beginAtZero: false }
       }
     }
   });
   
-  // Evento para encender/apagar el dispositivo en el control 1
-  onButton1.addEventListener('click', function() {
-    const action = statusElement1.innerText === 'Open' ? 'OFF' : 'ON';
-    fetch('/control', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ action: action, device: deviceId, controlId: 'control1' })
-    })
-    .then(response => response.json())
-    .then(data => {
-      console.log('Respuesta al controlar el dispositivo:', data);
-    })
-    .catch(error => {
-      console.error('Error al controlar el dispositivo:', error);
-    });
+
+  // Helper para añadir puntos y mantener ventana de 20 muestras
+  function updateChart(chart, value) {
+    const now = new Date().toLocaleTimeString();
+    chart.data.labels.push(now);
+    chart.data.datasets[0].data.push(parseFloat(value));
+    if (chart.data.labels.length > 500) {
+      chart.data.labels.shift();
+      chart.data.datasets[0].data.shift();
+    }
+    chart.update();
+  }
+
+//////////////////////////
+  // — Handler global de updates —
+  socket.on('deviceStatusUpdate', ({ device, control, state }) => {
+    // login flow
+    if (loginPending && device === deviceId && control === 'mensaje') {
+      clearTimeout(loginTimeout);
+      loginPending = false;
+      if (state === 'OK') {
+        loggedIn        = true;
+        loginDiv.style.display = 'none';
+        dashDiv.style.display  = 'block';
+      } else {
+        socket.emit('unsubscribe', deviceId);
+        showLoginError('Credenciales incorrectas');
+      }
+      return;
+    }
+
+    // antes de login o topic de otro device → ignoro
+    if (!loggedIn || device !== deviceId) return;
+
+    // ya dentro → actualizar UI
+    switch (control) {
+      case 'temp':
+        motorTempEl.innerText = `${state} °C`;
+        updateChart(tempChart, state);         // <— aquí actualizo la gráfica
+        break;
+      case 'vibracion':
+        motorVibEl.innerText = `${state} mm/s`;
+        updateChart(vibChart, state);          // <— y aquí actualizo la gráfica
+        break;
+      case 'tempCritica':
+        tempCritIn.value      = state;
+        tempCritCur.innerText = `${state} °C`;
+        break;
+      case 'vibracionCritica':
+        vibCritIn.value       = state;
+        vibCritCur.innerText  = `${state} mm/s`;
+        break;
+      case 'tempAlarm':
+        tempAlarmLed.classList.toggle('on', state === 'ON');
+        break;
+      case 'vibracionAlarm':
+        vibAlarmLed.classList.toggle('on', state === 'ON');
+        break;
+      case 'buzzerStatus':
+        // buzzerLed.classList.toggle('on', state === 'ON');
+        break;
+    }
   });
 
-  // Evento para encender/apagar el dispositivo en el control 2
-  onButton2.addEventListener('click', function() {
-    const action = statusElement2.innerText === 'Open' ? 'OFF' : 'ON';
-    fetch('/control', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ action: action, device: deviceId, controlId: 'control2' })
-    })
-    .then(response => response.json())
-    .then(data => {
-      console.log('Respuesta al controlar el dispositivo:', data);
-    })
-    .catch(error => {
-      console.error('Error al controlar el dispositivo:', error);
-    });
+  // — acciones post-login —
+  saveCritBtn.addEventListener('click', () => {
+    socket.emit('publish',{ topic:`${deviceId}/tempCritica`,      message: tempCritIn.value });
+    socket.emit('publish',{ topic:`${deviceId}/vibracionCritica`, message: vibCritIn.value  });
   });
-  
-  // Cuando el cliente se desconecte, dejar de suscribirse a los tópicos
-  window.addEventListener('beforeunload', function() {
-    socket.emit('unsubscribe', deviceId);
+  disableAlarmB.addEventListener('click', () => {
+    socket.emit('publish',{ topic:`${deviceId}/buzzerControl`, message:'OFF' });
+  });
+  closeBtn.addEventListener('click', () => dashDiv.style.display = 'none');
+  window.addEventListener('beforeunload', () => {
+    if (deviceId) socket.emit('unsubscribe', deviceId);
   });
 });
