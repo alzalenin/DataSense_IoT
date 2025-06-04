@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>DataSense IOT — Login</title>
+  <!-- Font Awesome para los iconos -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -74,8 +76,14 @@
             <span>Vibración Alta</span>
             <div id="vibAlarmLed" class="led-large"></div>
           </div>
+          <div class="alarm-box buzzer-box">
+            <span>Buzzer</span>
+            <i id="buzzerIcon" class="fas fa-bullhorn led-large"></i>
+          </div>
         </div>
-        <button class="btn btn-alert" id="deactivateAlarmBtn">Desactivar Alarma</button>
+        <button class="btn btn-alert" id="deactivateAlarmBtn">
+          <i class="fas fa-power-off"></i> Desactivar Buzzer
+        </button>
 
         <div class="credits">
           <em>Desarrollado por:</em><br>
@@ -84,13 +92,21 @@
         </div>
       </div>
 
-      <!-- BLOQUE 2: Gráficos -->
+      <!-- BLOQUE 2: Gráficos y Logs -->
       <div class="block">
         <h4>Gráfico: Temperatura del Motor</h4>
         <canvas id="chartTempMotor" style="width:100%; height:120px;"></canvas>
         <h4 style="margin-top:20px;">Gráfico: Vibración de la Máquina</h4>
         <canvas id="chartVibMotor" style="width:100%; height:120px;"></canvas>
+
+        <div class="log-panel">
+          <h4>Logs del Sistema</h4>
+          <div id="mensajes" class="log-messages">
+            <!-- aquí irán las líneas de log -->
+          </div>
+        </div>
       </div>
+
     </div>
   </div>
 
@@ -99,4 +115,3 @@
   <script src="scripts.js"></script>
 </body>
 </html>
-

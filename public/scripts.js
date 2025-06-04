@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const deviceNameEl = document.getElementById('deviceName');
   const motorTempEl  = document.getElementById('motorTemp');
   const motorVibEl   = document.getElementById('motorVibration');
+  const mensajes  = document.getElementById('mensajes');
   const tempCritIn   = document.getElementById('tempThreshold');
   const tempCritCur  = document.getElementById('tempCurrent');
   const vibCritIn    = document.getElementById('vibThreshold');
@@ -174,9 +175,40 @@ const ctxVib = document.getElementById('chartVibMotor').getContext('2d');
         break;
       case 'buzzerStatus':
         // buzzerLed.classList.toggle('on', state === 'ON');
+         if (state === 'ON') {
+      // Activar color + parpadeo
+        buzzerIcon.classList.add('on', 'blink');
+        } else {
+          // Desactivar
+          buzzerIcon.classList.remove('on', 'blink');
+        }
+        break;
+      case 'mensaje':
+        // detectar nivel según prefijo
+        const txt = state.trim();
+        const lower = txt.toLowerCase();
+        let level = 'info';
+        if (lower.startsWith('error')) level = 'error';
+        else if (lower.startsWith('warn')) level = 'warn';
+        appendLog(txt, level);
         break;
     }
   });
+
+// — Helper para añadir líneas al panel de logs —
+function appendLog(msg, level = 'info') {
+  const container = document.getElementById('mensajes');
+  const p = document.createElement('p');
+
+  // timestamp HH:MM:SS
+  const now = new Date();
+  const ts = now.toLocaleTimeString('es-ES', { hour12: false });
+
+  p.textContent = `[${ts}] ${msg}`;
+  p.classList.add(level); // espera .info, .warn o .error
+  container.appendChild(p);
+  container.scrollTop = container.scrollHeight;
+}
 
   // — acciones post-login —
   saveCritBtn.addEventListener('click', () => {

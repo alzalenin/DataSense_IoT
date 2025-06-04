@@ -8,7 +8,7 @@
   --color-connect: #3cc222;
   --text-light: #ffffff;
   --text-dark: #000000;
-
+  --color-warning: #C17E00;  /* Ámbar suave */
 }
 
 /* Reset mínimo */
@@ -179,4 +179,87 @@ body {
 .chart-block canvas {
   width : 100% !important;
   height: 200px !important;   /* altura fija */
+}
+
+
+
+/* === Panel de Logs === */
+/* ———————————————— */
+/* Contenedor de mensajes */
+/* ———————————————— */
+
+
+#mensajes {
+  /* altura fija para 3 líneas (3 × line-height) */
+  line-height: 0.5em;
+  height: calc(1.4em * 3);  /* 3 líneas */
+  overflow-y: auto;
+  padding: 10px;
+  background: var(--color-light);
+  border: 1px solid var(--color-medium);
+  border-radius: 4px;
+  font-size: 13px;
+  color: var(--text-dark);
+}
+
+/* Estilo base para cada línea */
+#mensajes p {
+  margin: 0 0 6px;
+  white-space: pre-wrap;
+}
+
+/* Mensajes informativos (info) */
+#mensajes p.info {
+  color: var(--color-dark);    /* Azul oscuro para contenido normal */
+}
+
+/* Mensajes de advertencia (warn) */
+#mensajes p.warn {
+  color: var(--color-warning); /* Azul medio 2 para warnings */
+  font-weight: bold;
+}
+
+/* Mensajes de error (error) */
+#mensajes p.error {
+  color: var(--color-alert);   /* Rojo complementario para errores */
+  font-weight: bold;
+}
+
+
+
+
+
+/* ============================= */
+/* Estilos para el buzzer        */
+/* ============================= */
+
+/* Contenedor del ícono de buzzer */
+.buzzer-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 14px;
+  color: var(--color-dark);
+}
+
+/* Ícono de buzzer */
+.buzzer-icon {
+  font-size: 36px;
+  color: var(--color-alert-off);  /* Estado OFF: color más suave */
+  transition: color 0.3s ease, transform 0.3s ease;
+}
+
+/* Cuando el buzzer está activado */
+.buzzer-icon.on {
+  color: var(--color-alert);      /* Estado ON: color de alerta */
+}
+
+/* Animación de parpadeo para el ícono cuando está sonando */
+@keyframes buzzer-beep {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.2); }
+}
+
+.buzzer-icon.blink {
+  animation: buzzer-beep 0.5s infinite;
 }
